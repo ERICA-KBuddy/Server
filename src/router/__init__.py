@@ -7,7 +7,7 @@ from fastapi import APIRouter
 
 from .item import item_router
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/kbuddy/api/v1")
 
 router.include_router(item_router, tags=["item"])
 
