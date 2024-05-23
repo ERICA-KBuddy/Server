@@ -13,7 +13,6 @@ from src.db.models import Item
 class ItemCreate(BaseModel):
     name: str = Field(..., title="Item Name", description="The name of the item.")
     price: float = Field(..., title="Item Price", description="The price of the item.")
-    owner_id: int = Field(..., title="Item Owner", description="The owner of the item.")
 
 
 class ItemUpdate(BaseModel):
@@ -35,7 +34,6 @@ class Item(BaseModel):  # type: ignore
     )
     name: str = Field(..., title="Item Name", description="The name of the item.")
     price: float = Field(..., title="Item Price", description="The price of the item.")
-    owner_id: int = Field(..., title="Item Owner", description="The owner of the item.")
 
     class ConfigDict:
         orm_model = Item

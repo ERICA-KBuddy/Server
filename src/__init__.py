@@ -17,7 +17,7 @@ from src.router import router
 from src.core.settings import AppSettings
 from src.utils.documents import add_description_at_api_tags
 
-__version__ = get_version(root="../..", relative_to=__file__)
+__version__ = get_version(root="../", relative_to=__file__)  # .git이 있는 폴더를 가리켜야함.
 
 
 logger = logging.getLogger(__name__)
@@ -41,8 +41,8 @@ async def lifespan(app: FastAPI):
 
 def create_app(app_settings: AppSettings) -> FastAPI:
     app = FastAPI(
-        title="Simple Backend API",
-        description="Simple Backend Application using FastAPI",
+        title="K-Buddy(캡스톤) Backend API",
+        description="K-Buddy Backend API Server (for SW창업캡스톤디자인2)",
         version=__version__,
         lifespan=lifespan,
     )

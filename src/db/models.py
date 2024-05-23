@@ -13,6 +13,3 @@ class Item(ModelBase):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(length=255), index=True)
     price = Column(Integer, index=True)
-    owner_id = Column(Integer, ForeignKey("member.id"))
-
-    owner = relationship("Member", back_populates="items")

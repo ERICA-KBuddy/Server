@@ -10,7 +10,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from pydantic import AnyUrl, Field
+from pydantic import  Field, PostgresDsn, computed_field
+from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings
 
 
@@ -42,10 +43,43 @@ class AppSettings(BaseSettings):
         description="Secret key to be used for issuing HMAC tokens.",
     )
 
-    DATABASE_URI: AnyUrl = Field(
-        default="mysql+aiomysql://bnbong:password@localhost:3306/fastapidb",
-        description="MariaDB connection URI.",
+    POSTGRES_SERVER: str = Field(
+        default="localhost",
+        description="Default PostgreSQL server URL"
     )
+
+    POSTGRES_PORT: int = Field(
+        default=5432,
+        description="Default PostgreSQL port number"
+    )
+
+    POSTGRES_USER: str = Field(
+        default="postgres",
+        description="Default PostgreSQL user"
+    )
+
+    POSTGRES_PASSWORD: str = Field(
+        default="password",
+        description="Default PostgreSQL user password"
+    )
+
+    POSTGRES_DB: str = Field(
+        default="test",
+        description="Default PostgreSQL DB name"
+    )
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def DATABASE_URI(self) -> PostgresDsn:
+        return MultiHostUrl.build(
+            scheme="postgresql+psycopg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_SERVER,
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_DB,
+        )
+
     DATABASE_OPTIONS: Dict[str, Any] = Field(
         default={
             "pool_size": 10,
