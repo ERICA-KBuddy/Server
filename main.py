@@ -10,7 +10,7 @@ import uvicorn
 from src import create_app, init_logger
 from src.core.settings import AppSettings
 
-app_settings = AppSettings()
+app_settings = AppSettings(_env_file=".env")
 init_logger(app_settings)
 
 
