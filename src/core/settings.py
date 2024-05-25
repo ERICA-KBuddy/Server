@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from pydantic import  Field, PostgresDsn, computed_field
+from pydantic import Field, PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AppSettings(BaseSettings):
@@ -90,5 +90,5 @@ class AppSettings(BaseSettings):
         description="MariaDB option to create a connection.",
     )
 
-    class ConfigDict:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
+
