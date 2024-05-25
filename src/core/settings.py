@@ -44,29 +44,22 @@ class AppSettings(BaseSettings):
     )
 
     POSTGRES_SERVER: str = Field(
-        default="localhost",
-        description="Default PostgreSQL server URL"
+        default="localhost", description="Default PostgreSQL server URL"
     )
 
     POSTGRES_PORT: int = Field(
-        default=5432,
-        description="Default PostgreSQL port number"
+        default=5432, description="Default PostgreSQL port number"
     )
 
     POSTGRES_USER: str = Field(
-        default="postgres",
-        description="Default PostgreSQL user"
+        default="postgres", description="Default PostgreSQL user"
     )
 
     POSTGRES_PASSWORD: str = Field(
-        default="password",
-        description="Default PostgreSQL user password"
+        default="password", description="Default PostgreSQL user password"
     )
 
-    POSTGRES_DB: str = Field(
-        default="test",
-        description="Default PostgreSQL DB name"
-    )
+    POSTGRES_DB: str = Field(default="test", description="Default PostgreSQL DB name")
 
     @computed_field  # type: ignore[misc]
     @property
@@ -91,4 +84,3 @@ class AppSettings(BaseSettings):
     )
 
     model_config = SettingsConfigDict(env_file=".env")
-

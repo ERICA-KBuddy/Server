@@ -13,9 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def get_object(
     db: AsyncSession, model: Any, model_id: int, response_model: Type[BaseModel]
 ) -> Optional[Any]:
-    # query = select(model).filter(model.id == model_id)
-    # result = (await db.execute(query)).scalar_one_or_none()
-
     result = await db.get(model, model_id)
     return response_model.model_validate(result.__dict__)
 
