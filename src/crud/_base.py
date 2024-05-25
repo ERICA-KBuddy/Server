@@ -21,10 +21,13 @@ async def get_objects(
     db: AsyncSession,
     model: Any,
     response_model: Type[BaseModel],
+    condition: Optional[Any] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> List[Any]:
     query = select(model).offset(skip).limit(limit)
+    if condition is not None:
+        query = query.where(condition)
     result = await db.execute(query)
     result_list = result.scalars().all()
     return [response_model.model_validate(item.__dict__) for item in result_list]

@@ -31,6 +31,8 @@ class User(ModelBase):
     bio = Column(String(50), nullable=False)
     point = Column(Integer, nullable=True)
     profile_img = Column(String(2048), nullable=True)
+    first_name = Column(String(50), nullable=True)
+    last_name = Column(String(50), nullable=True)
 
     reviews = relationship("UserReview", back_populates="reviewer")
     point_events = relationship("PointEvent", back_populates="user")
