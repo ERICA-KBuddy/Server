@@ -6,7 +6,7 @@
 from enum import Enum
 from datetime import datetime
 
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field
 
 from .responses import UserBase
 
@@ -17,8 +17,8 @@ from .responses import UserBase
 class UserCreate(UserBase):
     first_name: str
     last_name: str
-    user_id: str
-    password: SecretStr = Field(
+    nickname: str
+    password: str = Field(
         ..., title="User's password", description="유저 계정의 비밀번호 입니다."
     )
 
@@ -30,4 +30,4 @@ class UserUpdate(BaseModel):
 
 class UserLogin(BaseModel):
     identifier: str
-    password: SecretStr
+    password: str

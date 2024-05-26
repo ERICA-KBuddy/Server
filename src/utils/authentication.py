@@ -25,7 +25,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    user_id: Union[str, None] = None
+    user_email: Union[str, None] = None
 
 
 def verify_password(plain_password, hashed_password):
@@ -54,10 +54,10 @@ async def decode_user_data_from_token(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
+        user_email: str = payload.get("sub")
+        if user_email is None:
             raise credentials_exception
-        token_data = TokenData(user_id=user_id)
+        token_data = TokenData(user_email=user_email)
     except jwt.PyJWTError:
         raise credentials_exception
-    return token_data, user_id
+    return token_data, user_email

@@ -6,7 +6,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field, EmailStr, SecretStr, field_serializer
+from pydantic import BaseModel, Field, EmailStr, SecretStr, field_serializer, ConfigDict
 from typing import Optional
 
 

@@ -13,7 +13,14 @@ import warnings
 from typing import Any, Dict, Optional, Annotated
 from typing_extensions import Self
 
-from pydantic import Field, PostgresDsn, computed_field, AnyUrl, BeforeValidator, model_validator
+from pydantic import (
+    Field,
+    PostgresDsn,
+    computed_field,
+    AnyUrl,
+    BeforeValidator,
+    model_validator,
+)
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -45,9 +52,9 @@ class AppSettings(BaseSettings):
         default=True,
         description="If True, allow non-cerficiated users to get ESP token.",
     )
-    BACKEND_CORS_ORIGINS: Annotated[
-        list[AnyUrl] | str, BeforeValidator(parse_cors)
-    ] = []
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
+        []
+    )
 
     THREAD_POOL_SIZE: Optional[int] = Field(
         default=10,

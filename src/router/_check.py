@@ -35,8 +35,8 @@ async def check_user(
 
 async def check_user_is_self(
     db: AsyncSession,
-    user_pk: int,
-    target_pk: int,
+    user_pk: str,
+    target_pk: str,
 ):
     request_user = await db.get(User, user_pk)
 

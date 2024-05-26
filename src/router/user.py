@@ -37,13 +37,13 @@ async def get_all_users(
 
 # get a user
 @user_router.get(
-    "/{user_id}",
+    "/{user_uid}",
     response_model=UserSchema,
     summary="단일 회원 조회",
     description="회원 정보를 조회합니다.",
 )
-async def read_user(user_id: int, db: AsyncSession = Depends(database.get_db)):
-    db_user = await crud.get_user(db, user_id)
+async def read_user(user_uid: str, db: AsyncSession = Depends(database.get_db)):
+    db_user = await crud.get_user(db, user_uid)
     if db_user is None:
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
@@ -64,64 +64,65 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(database.get_
 
 # edit a user's info
 @user_router.put(
-    "/{user_id}",
+    "/{user_uid}",
     response_model=UserSchema,
     summary="단일 회원 정보 수정",
     description="회원 정보를 수정합니다.",
     dependencies=[Depends(auth)],
 )
 async def update_user(
-    user_id: int,
+    user_uid: str,
     user: UserUpdate,
     db: AsyncSession = Depends(database.get_db),
     request_user=Depends(check_user),
 ):
     user_pk = request_user
-    await check_user_is_self(db=db, user_pk=int(user_pk), target_pk=user_id)
+    await check_user_is_self(db=db, user_pk=str(user_pk), target_pk=user_uid)
 
-    db_user = await crud.get_user(db, user_id)
+    db_user = await crud.get_user(db, user_uid)
     if db_user is None:
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
-    return await crud.update_user(db, user_id, user)
+    return await crud.update_user(db, user_uid, user)
 
 
 # delete a user
-@user_router.delete(
-    "/{user_id}",
+@user_router.post(
+    "/{user_uid}/withdraw",
     status_code=204,
-    summary="단일 회원 삭제",
+    summary="단일 회원 회원 탈퇴",
     description="회원을 삭제합니다.",
     dependencies=[Depends(auth)],
 )
 async def delete_user(
-    user_id: int,
+    user_uid: str,
     db: AsyncSession = Depends(database.get_db),
     request_user=Depends(check_user),
 ):
     user_pk = request_user
-    await check_user_is_self(db=db, user_pk=int(user_pk), target_pk=user_id)
+    await check_user_is_self(db=db, user_pk=str(user_pk), target_pk=user_uid)
 
-    db_user = await crud.get_user(db, user_id)
+    db_user = await crud.get_user(db, user_uid)
     if db_user is None:
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
-    return await crud.delete_user(db, user_id)
+    return await crud.delete_user(db, user_uid)
 
 
 # user login
 @user_router.post("/login", response_model=UserSchema)
 async def login(user_login: UserLogin, db: AsyncSession = Depends(database.get_db)):
     user = await crud.get_user_by_identifier(db, user_login.identifier)
-    if not user or not user.verify_password(user_login.password.get_secret_value()):
+    if not user or not user.verify_password(user_login.password):
         raise InternalException(
             "이메일 혹은 비밀번호가 잘못되었습니다.",
             error_code=ErrorCode.UNAUTHORIZED,
         )
-    access_token = create_access_token(data={"sub": user.id})
-    response = UserSchema.model_validate(user.__dict__)
+    access_token = create_access_token(data={"sub": user.email})
+    user_data = UserSchema.model_validate(user.__dict__).model_dump_json()
+    response = JSONResponse(content={"user": user_data})
     response.set_cookie(
         key="access_token", value=f"Bearer {access_token}", httponly=True
     )
