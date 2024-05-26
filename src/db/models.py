@@ -1,9 +1,11 @@
 # --------------------------------------------------------------------------
-# Member model을 정의한 모듈입니다.
+# 전체 DB ORM model을 정의한 모듈입니다.
 #
 # @author bnbong bbbong9@gmail.com
 # --------------------------------------------------------------------------
 import uuid
+
+from typing import Optional
 
 from sqlalchemy import (
     Integer,
@@ -16,15 +18,18 @@ from sqlalchemy import (
     TIMESTAMP,
     UUID as SQLUUID,
 )
+from sqlalchemy import select
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db._base import ModelBase
+from src.utils.authentication import verify_password
 
 
 class User(ModelBase):
     __tablename__ = "Users"
     id = Column(SQLUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(256), nullable=True)
+    email = Column(String(256), nullable=True, unique=True)
     password = Column(String(256), nullable=True)
     nickname = Column(String(30), nullable=True)
     create_at = Column(TIMESTAMP, nullable=True)
@@ -36,6 +41,14 @@ class User(ModelBase):
 
     reviews = relationship("UserReview", back_populates="reviewer")
     point_events = relationship("PointEvent", back_populates="user")
+
+    def verify_password(self, password: str) -> bool:
+        return verify_password(password, self.password)
+
+    @classmethod
+    async def get_user_by_email(cls, db: AsyncSession, email: str) -> Optional["User"]:
+        result = await db.execute(select(cls).where(cls.email == email))
+        return result.scalars().first()
 
 
 class Hashtag(ModelBase):

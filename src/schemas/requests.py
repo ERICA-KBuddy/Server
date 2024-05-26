@@ -26,3 +26,8 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     bio: str
     profile_img: str
+
+
+class UserLogin(BaseModel):
+    identifier: str
+    password: SecretStr

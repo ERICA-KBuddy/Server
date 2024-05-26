@@ -8,14 +8,27 @@
 # --------------------------------------------------------------------------
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+import warnings
 
-from pydantic import Field, PostgresDsn, computed_field
+from typing import Any, Dict, Optional, Annotated
+from typing_extensions import Self
+
+from pydantic import Field, PostgresDsn, computed_field, AnyUrl, BeforeValidator, model_validator
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
+
+
 class AppSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
+
     LOGGING_DEBUG_LEVEL: bool = Field(
         default=True,
         description="True: DEBUG mode, False:: INFO mode",
@@ -32,6 +45,9 @@ class AppSettings(BaseSettings):
         default=True,
         description="If True, allow non-cerficiated users to get ESP token.",
     )
+    BACKEND_CORS_ORIGINS: Annotated[
+        list[AnyUrl] | str, BeforeValidator(parse_cors)
+    ] = []
 
     THREAD_POOL_SIZE: Optional[int] = Field(
         default=10,
@@ -42,6 +58,10 @@ class AppSettings(BaseSettings):
         default="example_secret_key_WoW",
         description="Secret key to be used for issuing HMAC tokens.",
     )
+
+    HASH_ALGORITHM: str = Field(default="HS256", description="Algorithm for Hashing")
+    # 60 minutes * 24 hours * 8 days = 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     POSTGRES_SERVER: str = Field(
         default="localhost", description="Default PostgreSQL server URL"
@@ -83,4 +103,22 @@ class AppSettings(BaseSettings):
         description="MariaDB option to create a connection.",
     )
 
-    model_config = SettingsConfigDict(env_file=".env")
+    def _check_default_secret(self, var_name: str, value: str | None) -> None:
+        if value == "changethis":
+            message = (
+                f'The value of {var_name} is "changethis", '
+                "for security, please change it, at least for deployments."
+            )
+            if self.ENVIRONMENT == "local":
+                warnings.warn(message, stacklevel=1)
+            else:
+                raise ValueError(message)
+
+    @model_validator(mode="after")
+    def _enforce_non_default_secrets(self) -> Self:
+        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
+
+        return self
+
+
+settings = AppSettings()

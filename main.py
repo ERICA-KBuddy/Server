@@ -8,13 +8,11 @@ from __future__ import annotations
 import uvicorn
 
 from src import create_app, init_logger
-from src.core.settings import AppSettings
+from src.core.settings import settings
 
-app_settings = AppSettings(_env_file=".env")
-init_logger(app_settings)
+init_logger(settings)
 
-
-app = create_app(app_settings)
+app = create_app(settings)
 
 if __name__ == "__main__":
     uvicorn.run(

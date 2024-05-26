@@ -24,11 +24,11 @@ class UserBase(BaseModel):
         None, title="User's nickname", description="유저의 닉네임 입니다."
     )
     create_at: Optional[datetime] = Field(
-        None, title="User's account created time", description="유저 계정의 생성 시간입니다."
+        None,
+        title="User's account created time",
+        description="유저 계정의 생성 시간입니다.",
     )
-    bio: str = Field(
-        None, title="User's bio", description="유저의 한줄 소개 입니다."
-    )
+    bio: str = Field(None, title="User's bio", description="유저의 한줄 소개 입니다.")
     point: Optional[int] = Field(
         None, title="User's point amount", description="유저의 포인트 입니다."
     )
@@ -42,7 +42,7 @@ class UserBase(BaseModel):
         None, title="User's last name", description="유저의 실제 성 입니다."
     )
 
-    @field_serializer('password', when_used='json')
+    @field_serializer("password", when_used="json")
     def dump_secret(self, v):
         return v.get_secret_value()
 

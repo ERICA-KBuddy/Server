@@ -7,15 +7,16 @@ from logging import getLogger
 from typing import List
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import user as crud
 from src.db import database
+from src.utils.authentication import create_access_token
 from src.helper.exceptions import InternalException, ErrorCode
-from src.schemas.requests import UserCreate, UserUpdate
+from src.schemas.requests import UserCreate, UserUpdate, UserLogin
 from src.schemas.responses import UserSchema
 from ._check import auth, check_user, check_user_is_self
-
 
 log = getLogger(__name__)
 user_router = APIRouter(prefix="/user")
@@ -44,16 +45,18 @@ async def get_all_users(
 async def read_user(user_id: int, db: AsyncSession = Depends(database.get_db)):
     db_user = await crud.get_user(db, user_id)
     if db_user is None:
-        raise InternalException("해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND)
+        raise InternalException(
+            "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
+        )
     return db_user
 
 
 # create a user
 @user_router.post(
-    "/",
+    "/signup",
     response_model=UserSchema,
-    summary="단일 회원 추가",
-    description="회원 정보를 추가합니다.",
+    summary="단일 회원 추가 (회원 가입)",
+    description="새로운 회원 정보를 데이터베이스에 추가합니다.",
 )
 async def create_user(user: UserCreate, db: AsyncSession = Depends(database.get_db)):
     return await crud.create_user(db, user)
@@ -78,7 +81,9 @@ async def update_user(
 
     db_user = await crud.get_user(db, user_id)
     if db_user is None:
-        raise InternalException("해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND)
+        raise InternalException(
+            "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
+        )
     return await crud.update_user(db, user_id, user)
 
 
@@ -100,9 +105,32 @@ async def delete_user(
 
     db_user = await crud.get_user(db, user_id)
     if db_user is None:
-        raise InternalException("해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND)
+        raise InternalException(
+            "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
+        )
     return await crud.delete_user(db, user_id)
 
+
 # user login
+@user_router.post("/login", response_model=UserSchema)
+async def login(user_login: UserLogin, db: AsyncSession = Depends(database.get_db)):
+    user = await crud.get_user_by_identifier(db, user_login.identifier)
+    if not user or not user.verify_password(user_login.password.get_secret_value()):
+        raise InternalException(
+            "이메일 혹은 비밀번호가 잘못되었습니다.",
+            error_code=ErrorCode.UNAUTHORIZED,
+        )
+    access_token = create_access_token(data={"sub": user.id})
+    response = UserSchema.model_validate(user.__dict__)
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True
+    )
+    return response
+
 
 # user logout
+@user_router.post("/logout", status_code=204)
+async def logout():
+    response = JSONResponse(content="성공적으로 로그아웃 하였습니다.", status_code=204)
+    response.delete_cookie(key="access_token")
+    return response

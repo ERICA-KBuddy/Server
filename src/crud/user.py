@@ -5,13 +5,15 @@
 # --------------------------------------------------------------------------
 from typing import List, Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._base import get_objects, get_object, create_object, update_object, delete_object
 from src.db.models import User
-
 from src.schemas.requests import UserCreate, UserUpdate
 from src.schemas.responses import UserSchema
+from ..helper.exceptions import InternalException, ErrorCode
+from ..utils.authentication import decode_user_data_from_token
 
 
 async def get_all_users(
@@ -33,6 +35,17 @@ async def get_user(db, user_id) -> Optional[UserSchema]:
     )
 
 
+async def get_current_user(db: AsyncSession):
+    _, user_id = decode_user_data_from_token()
+    user = await get_user(user_id=user_id, db=db)
+    if user is None:
+        raise InternalException(
+            "데이터베이스에 해당 유저 정보가 없습니다.",
+            error_code=ErrorCode.UNAUTHORIZED,
+        )
+    return user
+
+
 async def create_user(db: AsyncSession, user: UserCreate) -> UserSchema:
     return await create_object(db=db, model=User, obj=user, response_model=UserSchema)
 
@@ -51,3 +64,17 @@ async def update_user(
 
 async def delete_user(db: AsyncSession, user_id: int) -> Optional[int]:
     return await delete_object(db=db, model=User, model_id=user_id)
+
+
+async def get_user_by_identifier(db: AsyncSession, identifier: str) -> Optional[User]:
+    query = select(User).filter(
+        (User.email == identifier) | (User.nickname == identifier)
+    )
+    db_obj = (await db.execute(query)).scalar_one()
+
+    return db_obj
+
+
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+    result = await db.execute(select(User).where(User.email == email))
+    return result.scalars().first()

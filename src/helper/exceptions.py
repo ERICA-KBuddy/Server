@@ -9,10 +9,11 @@ from pydantic import BaseModel, Field
 
 
 class ErrorCode(Enum):
-    NOT_FOUND = ("NOT_FOUND", "KB-001", 404)
-    UNKNOWN_ERROR = ("UNKNOWN_ERROR", "KB-002", 500)
+    BAD_REQUEST = ("BAD_REQUEST", "KB-001", 400)
+    UNAUTHORIZED = ("UNAUTHORIZED", "KB-002", 401)
     FORBIDDEN = ("FORBIDDEN", "KB-003", 403)
-    BAD_REQUEST = ("BAD_REQUEST", "KB-004", 400)
+    NOT_FOUND = ("NOT_FOUND", "KB-004", 404)
+    UNKNOWN_ERROR = ("UNKNOWN_ERROR", "KB-005", 500)
 
 
 class ExceptionSchema(BaseModel):
