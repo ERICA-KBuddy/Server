@@ -8,7 +8,7 @@ from fastapi import FastAPI
 
 def add_description_at_api_tags(app: FastAPI):
     tag_descriptions = {
-        "item": "Item 관련 API. 회원의 아이템을 관리합니다.",
+        "user": "User API. 회원 로그인, 로그아웃, 정보 조회 및 수정 등을 수행합니다."
     }
 
     # OpenAPI 태그별 description 생성

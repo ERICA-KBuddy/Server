@@ -7,11 +7,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from pydantic import AnyUrl
 
-from src.core.settings import AppSettings
+from src.core.settings import settings
 from src.db._base import Base
 
-
-settings = AppSettings()
 
 SQLALCHEMY_DATABASE_URL: AnyUrl = str(settings.DATABASE_URI)
 engine_options = settings.DATABASE_OPTIONS

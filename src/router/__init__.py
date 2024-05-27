@@ -5,11 +5,11 @@
 # --------------------------------------------------------------------------
 from fastapi import APIRouter
 
-from .item import item_router
+from .user import user_router
 
 router = APIRouter(prefix="/kbuddy/api/v1")
 
-router.include_router(item_router, tags=["item"])
+router.include_router(user_router, tags=["user"])
 
 
 @router.get(
