@@ -1,3 +1,8 @@
+# --------------------------------------------------------------------------
+# 토큰 로직을 정의한 모듈입니다.
+#
+# @author bnbong bbbong9@gmail.com
+# --------------------------------------------------------------------------
 import jwt
 
 from typing import Union
@@ -53,6 +58,8 @@ async def decode_user_data_from_token(token: str = Depends(oauth2_scheme)):
         error_code=ErrorCode.UNAUTHORIZED,
     )
     try:
+        if token.startswith("Bearer "):
+            token = token[len("Bearer ") :]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_email: str = payload.get("sub")
         if user_email is None:

@@ -6,7 +6,7 @@
 from logging import getLogger
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,7 +16,7 @@ from src.utils.authentication import create_access_token
 from src.helper.exceptions import InternalException, ErrorCode
 from src.schemas.requests import UserCreate, UserUpdate, UserLogin
 from src.schemas.responses import UserSchema
-from ._check import auth, check_user, check_user_is_self
+from ._check import auth, check_user_is_self, get_current_user_info
 
 log = getLogger(__name__)
 user_router = APIRouter(prefix="/user")
@@ -73,13 +73,11 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(database.get_
 async def update_user(
     user_uid: str,
     user: UserUpdate,
+    request: Request,
     db: AsyncSession = Depends(database.get_db),
-    request_user=Depends(check_user),
 ):
-    user_pk = request_user
-    await check_user_is_self(db=db, user_pk=str(user_pk), target_pk=user_uid)
+    db_user = await check_user_is_self(request=request, db=db, target_pk=user_uid)
 
-    db_user = await crud.get_user(db, user_uid)
     if db_user is None:
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
@@ -97,13 +95,11 @@ async def update_user(
 )
 async def delete_user(
     user_uid: str,
+    request: Request,
     db: AsyncSession = Depends(database.get_db),
-    request_user=Depends(check_user),
 ):
-    user_pk = request_user
-    await check_user_is_self(db=db, user_pk=str(user_pk), target_pk=user_uid)
+    db_user = await check_user_is_self(request=request, db=db, target_pk=user_uid)
 
-    db_user = await crud.get_user(db, user_uid)
     if db_user is None:
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
@@ -112,7 +108,12 @@ async def delete_user(
 
 
 # user login
-@user_router.post("/login", response_model=UserSchema)
+@user_router.post(
+    "/login",
+    response_model=UserSchema,
+    summary="회원 로그인",
+    description="서비스에 로그인을 수행합니다.",
+)
 async def login(user_login: UserLogin, db: AsyncSession = Depends(database.get_db)):
     user = await crud.get_user_by_identifier(db, user_login.identifier)
     if not user or not user.verify_password(user_login.password):
@@ -130,8 +131,24 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(database.get_d
 
 
 # user logout
-@user_router.post("/logout", status_code=204)
-async def logout():
+# TODO: 쿠키 로직 추가
+@user_router.post(
+    "/logout",
+    status_code=204,
+    summary="회원 로그아웃",
+    description="로그인한 회원을 로그아웃 합니다.",
+    dependencies=[Depends(auth)],
+)
+async def logout(
+    request: Request,
+    db: AsyncSession = Depends(database.get_db),
+):
+    user = await get_current_user_info(request=request, db=db)
+    if not user:
+        raise InternalException(
+            "로그인 되어 있는 유저 정보가 없습니다.",
+            error_code=ErrorCode.UNAUTHORIZED,
+        )
     response = JSONResponse(content="성공적으로 로그아웃 하였습니다.", status_code=204)
     response.delete_cookie(key="access_token")
     return response

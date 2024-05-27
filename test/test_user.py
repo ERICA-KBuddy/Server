@@ -65,9 +65,10 @@ class TestUserAPI:
         login_data = {"identifier": "bnbong@hanyang.ac.kr", "password": "password123"}
         response = await app_client.post("kbuddy/api/v1/user/login", json=login_data)
         assert response.status_code == 200  # 유저가 존재하고 로그인이 되어 있다는 상황
+        cookies = response.cookies
 
         # when
-        response = await app_client.post("kbuddy/api/v1/user/logout")
+        response = await app_client.post("kbuddy/api/v1/user/logout", cookies=cookies)
 
         # then
         assert response.status_code == 204
@@ -101,6 +102,7 @@ class TestUserAPI:
         login_data = {"identifier": "bnbong@hanyang.ac.kr", "password": "password123"}
         response = await app_client.post("kbuddy/api/v1/user/login", json=login_data)
         assert response.status_code == 200  # 유저가 존재하고 로그인이 되어 있다는 상황
+        cookies = response.cookies
 
         # when
         update_data = {
@@ -110,7 +112,7 @@ class TestUserAPI:
         response = await app_client.put(
             f"kbuddy/api/v1/user/{self.user_id}",
             json=update_data,
-            headers={"user_pk": str(self.user_id)},
+            cookies=cookies,
         )
 
         # then
@@ -124,11 +126,12 @@ class TestUserAPI:
         login_data = {"identifier": "bnbong@hanyang.ac.kr", "password": "password123"}
         response = await app_client.post("kbuddy/api/v1/user/login", json=login_data)
         assert response.status_code == 200  # 유저가 존재하고 로그인이 되어 있다는 상황
+        cookies = response.cookies
 
         # when
         response = await app_client.post(
             f"kbuddy/api/v1/user/{self.user_id}/withdraw",
-            headers={"user_pk": str(self.user_id)},
+            cookies=cookies,
         )
 
         # then
