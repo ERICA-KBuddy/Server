@@ -11,7 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import area as crud
 from src.db import database
-from src.schemas.requests import AreaCreate, AreaUpdate, AreaImageCreate, AreaImageUpdate
+from src.schemas.requests import (
+    AreaCreate,
+    AreaUpdate,
+    AreaImageCreate,
+    AreaImageUpdate,
+)
 from src.schemas.responses import AreaSchema, AreaImageSchema
 from src.helper.exceptions import InternalException, ErrorCode
 

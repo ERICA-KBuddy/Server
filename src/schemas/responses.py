@@ -68,13 +68,13 @@ class AreaBase(BaseModel):
 
 
 class AreaImageBase(BaseModel):
-    area_id: int
     area_img: str
     created_at: datetime
 
 
 class AreaImageSchema(AreaImageBase):
     id: int
+    area_id: int
 
     class Config:
         from_attributes = True
