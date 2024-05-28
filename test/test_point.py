@@ -20,7 +20,9 @@ class TestPointAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = await app_client.post("kbuddy/api/v1/user/signup", json=self.user_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/user/signup", json=self.user_data
+        )
         self.user_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -32,7 +34,9 @@ class TestPointAPI:
             "event_date": datetime.utcnow().isoformat(),
             "exp_date": (datetime.utcnow() + timedelta(days=365)).isoformat(),
         }
-        response = await app_client.post("kbuddy/api/v1/point/events", json=self.event_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/point/events", json=self.event_data
+        )
         self.event_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -105,7 +109,9 @@ class TestPointAPI:
         # given
 
         # when
-        response = await app_client.delete(f"kbuddy/api/v1/point/events/{self.event_id}")
+        response = await app_client.delete(
+            f"kbuddy/api/v1/point/events/{self.event_id}"
+        )
 
         # then
         assert response.status_code == 204
@@ -120,7 +126,9 @@ class TestPointAPI:
         }
 
         # when
-        response = await app_client.post("kbuddy/api/v1/point/details", json=detail_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/point/details", json=detail_data
+        )
 
         # then
         assert response.status_code == 200
@@ -148,7 +156,7 @@ class TestPointAPI:
         assert response.status_code == 200
         data = response.json()
         assert len(response.json()) > 0
-        assert data[0]['point'] == 50
+        assert data[0]["point"] == 50
 
     async def test_get_point_detail(self, app_client: AsyncClient):
         # given
@@ -158,7 +166,9 @@ class TestPointAPI:
             "point_date": datetime.utcnow().isoformat(),
             "point": 50,
         }
-        response = await app_client.post("kbuddy/api/v1/point/details", json=detail_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/point/details", json=detail_data
+        )
         detail_id = response.json()["id"]
 
         # when
@@ -178,7 +188,9 @@ class TestPointAPI:
             "point_date": datetime.utcnow().isoformat(),
             "point": 50,
         }
-        response = await app_client.post("kbuddy/api/v1/point/details", json=detail_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/point/details", json=detail_data
+        )
         detail_id = response.json()["id"]
 
         # when
@@ -206,7 +218,9 @@ class TestPointAPI:
             "point_date": datetime.utcnow().isoformat(),
             "point": 50,
         }
-        response = await app_client.post("kbuddy/api/v1/point/details", json=detail_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/point/details", json=detail_data
+        )
         detail_id = response.json()["id"]
 
         # when
@@ -219,7 +233,9 @@ class TestPointAPI:
         # given
 
         # when
-        response = await app_client.get(f"kbuddy/api/v1/point/user/{self.user_id}/balance")
+        response = await app_client.get(
+            f"kbuddy/api/v1/point/user/{self.user_id}/balance"
+        )
 
         # then
         assert response.status_code == 200

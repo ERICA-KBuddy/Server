@@ -6,6 +6,7 @@
 from fastapi import APIRouter
 
 from .user import user_router
+from .listing import listing_router
 from .area import area_router
 from .review import review_router
 from .order import order_router
@@ -19,6 +20,7 @@ router.include_router(area_router, tags=["area"])
 router.include_router(review_router, tags=["review"])
 router.include_router(order_router, tags=["order"])
 router.include_router(point_router, tags=["point"])
+router.include_router(listing_router, tags=["listing"])
 router.include_router(itinerary_router, tags=["itinerary"])
 
 
