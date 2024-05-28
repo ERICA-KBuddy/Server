@@ -6,10 +6,12 @@
 from fastapi import APIRouter
 
 from .user import user_router
+from .area import area_router
 
 router = APIRouter(prefix="/kbuddy/api/v1")
 
 router.include_router(user_router, tags=["user"])
+router.include_router(area_router, tags=["area"])
 
 
 @router.get(

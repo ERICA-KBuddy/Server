@@ -35,7 +35,6 @@ async def get_all_users(
     return await crud.get_all_users(db, skip=skip, limit=limit)
 
 
-# get a user
 @user_router.get(
     "/{user_uid}",
     response_model=UserSchema,
@@ -51,7 +50,6 @@ async def read_user(user_uid: str, db: AsyncSession = Depends(database.get_db)):
     return db_user
 
 
-# create a user
 @user_router.post(
     "/signup",
     response_model=UserSchema,
@@ -62,7 +60,6 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(database.get_
     return await crud.create_user(db, user)
 
 
-# edit a user's info
 @user_router.put(
     "/{user_uid}",
     response_model=UserSchema,
@@ -85,7 +82,6 @@ async def update_user(
     return await crud.update_user(db, user_uid, user)
 
 
-# delete a user
 @user_router.post(
     "/{user_uid}/withdraw",
     status_code=204,
@@ -107,7 +103,6 @@ async def delete_user(
     return await crud.delete_user(db, user_uid)
 
 
-# user login
 @user_router.post(
     "/login",
     response_model=UserSchema,
@@ -130,8 +125,6 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(database.get_d
     return response
 
 
-# user logout
-# TODO: 쿠키 로직 추가
 @user_router.post(
     "/logout",
     status_code=204,
