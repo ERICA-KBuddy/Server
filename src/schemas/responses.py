@@ -116,3 +116,31 @@ class AreaSchema(AreaBase):
 # --------------------------------------------------------------------------
 # Point
 # --------------------------------------------------------------------------
+class PointEventBase(BaseModel):
+    user_id: UUID
+    event_type: str
+    amount: int
+    detail: str
+    event_date: datetime
+    exp_date: Optional[datetime]
+
+
+class PointEventSchema(PointEventBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class PointDetailBase(BaseModel):
+    event_id: int
+    related_event_id: int
+    point_date: datetime
+    point: int
+
+
+class PointDetailSchema(PointDetailBase):
+    id: int
+
+    class Config:
+        from_attributes = True
