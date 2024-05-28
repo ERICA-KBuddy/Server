@@ -116,12 +116,24 @@ class ListingSchema(ListingBase):
     id: UUID
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # --------------------------------------------------------------------------
 # Order
 # --------------------------------------------------------------------------
+class OrderBase(BaseModel):
+    amount: int
+    is_refunded: bool
+    buyer_id: UUID
+    listing_id: UUID
+
+
+class OrderSchema(OrderBase):
+    id: UUID
+
+    class Config:
+        from_attributes = True
 
 
 # --------------------------------------------------------------------------

@@ -21,7 +21,9 @@ class TestListingAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = await app_client.post("kbuddy/api/v1/user/signup", json=self.user_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/user/signup", json=self.user_data
+        )
         self.user_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -35,7 +37,9 @@ class TestListingAPI:
             "promotion_end": (datetime.utcnow() + timedelta(days=30)).isoformat(),
             "amount": 100,
         }
-        response = await app_client.post("kbuddy/api/v1/listing/", json=self.listing_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/listing/", json=self.listing_data
+        )
         self.listing_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -72,7 +76,9 @@ class TestListingAPI:
                 "detail": f"New listing {i}",
                 "seller_info": "This is seller information",
                 "promotion_start": datetime.utcnow().isoformat(),
-                "promotion_end": (datetime.utcnow() + timedelta(days=random_days)).isoformat(),
+                "promotion_end": (
+                    datetime.utcnow() + timedelta(days=random_days)
+                ).isoformat(),
                 "amount": 200,
             }
             await app_client.post("kbuddy/api/v1/listing/", json=listing_data)
