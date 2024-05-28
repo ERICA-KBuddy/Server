@@ -87,7 +87,8 @@ async def delete_area(
     area_id: int,
     db: AsyncSession = Depends(database.get_db),
 ):
-    return await crud.delete_area(db, area_id)
+    await crud.delete_area(db, area_id)
+    return {"detail": "지역이 성공적으로 삭제되었습니다."}
 
 
 @area_router.get(

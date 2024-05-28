@@ -100,7 +100,8 @@ async def delete_user(
         raise InternalException(
             "해당 유저를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
-    return await crud.delete_user(db, user_uid)
+    await crud.delete_user(db, user_uid)
+    return {"detail": "유저가 성공적으로 삭제되었습니다."}
 
 
 @user_router.post(

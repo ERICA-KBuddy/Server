@@ -101,6 +101,22 @@ class AreaSchema(AreaBase):
 # --------------------------------------------------------------------------
 # Listing
 # --------------------------------------------------------------------------
+class ListingBase(BaseModel):
+    seller_id: UUID
+    created_at: datetime
+    is_closed: bool
+    detail: str
+    seller_info: str
+    promotion_start: datetime
+    promotion_end: datetime
+    amount: int
+
+
+class ListingSchema(ListingBase):
+    id: UUID
+
+    class Config:
+        orm_mode = True
 
 
 # --------------------------------------------------------------------------

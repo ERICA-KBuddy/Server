@@ -7,6 +7,7 @@ from enum import Enum
 from datetime import datetime
 
 from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
 
 from .responses import (
     UserBase,
@@ -14,6 +15,7 @@ from .responses import (
     AreaImageBase,
     PointDetailBase,
     PointEventBase,
+    ListingBase,
 )
 
 
@@ -88,6 +90,17 @@ class AreaImageUpdate(AreaImageBase):
 # --------------------------------------------------------------------------
 # Listing
 # --------------------------------------------------------------------------
+class ListingCreate(ListingBase):
+    pass
+
+
+class ListingUpdate(BaseModel):
+    is_closed: Optional[bool]
+    detail: Optional[str]
+    seller_info: Optional[str]
+    promotion_start: Optional[datetime]
+    promotion_end: Optional[datetime]
+    amount: Optional[int]
 
 
 # --------------------------------------------------------------------------

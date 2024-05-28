@@ -15,7 +15,7 @@ from src.schemas.requests import (
     PointEventCreate,
     PointEventUpdate,
     PointDetailCreate,
-    PointDetailUpdate
+    PointDetailUpdate,
 )
 from src.schemas.responses import PointDetailSchema, PointEventSchema
 from src.helper.exceptions import InternalException, ErrorCode
@@ -59,7 +59,9 @@ async def read_point_event(event_id: int, db: AsyncSession = Depends(database.ge
     summary="포인트 이벤트 추가",
     description="새로운 포인트 이벤트를 추가합니다.",
 )
-async def create_point_event(event: PointEventCreate, db: AsyncSession = Depends(database.get_db)):
+async def create_point_event(
+    event: PointEventCreate, db: AsyncSession = Depends(database.get_db)
+):
     return await crud.create_point_event(db, event)
 
 
@@ -120,7 +122,9 @@ async def get_all_point_details(
     summary="단일 포인트 상세 내역 조회",
     description="단일 포인트 상세 내역을 조회합니다.",
 )
-async def read_point_detail(detail_id: int, db: AsyncSession = Depends(database.get_db)):
+async def read_point_detail(
+    detail_id: int, db: AsyncSession = Depends(database.get_db)
+):
     db_detail = await crud.get_point_detail(db, detail_id)
     if db_detail is None:
         raise InternalException(
@@ -135,7 +139,9 @@ async def read_point_detail(detail_id: int, db: AsyncSession = Depends(database.
     summary="포인트 상세 내역 추가",
     description="새로운 포인트 상세 내역을 추가합니다.",
 )
-async def create_point_detail(detail: PointDetailCreate, db: AsyncSession = Depends(database.get_db)):
+async def create_point_detail(
+    detail: PointDetailCreate, db: AsyncSession = Depends(database.get_db)
+):
     return await crud.create_point_detail(db, detail)
 
 
@@ -183,6 +189,8 @@ async def delete_point_detail(
     summary="사용자의 포인트 잔액 조회",
     description="사용자의 포인트 잔액을 조회합니다.",
 )
-async def get_user_point_balance(user_id: str, db: AsyncSession = Depends(database.get_db)):
+async def get_user_point_balance(
+    user_id: str, db: AsyncSession = Depends(database.get_db)
+):
     balance = await crud.get_user_points(db, user_id)
     return {"user_id": user_id, "balance": balance}
