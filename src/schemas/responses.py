@@ -3,7 +3,7 @@
 #
 # @author bnbong bbbong9@gmail.com
 # --------------------------------------------------------------------------
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr, SecretStr, field_serializer
@@ -139,6 +139,42 @@ class OrderSchema(OrderBase):
 # --------------------------------------------------------------------------
 # Itinerary
 # --------------------------------------------------------------------------
+class ItineraryRequestBase(BaseModel):
+    listing_id: UUID
+    order_id: UUID
+    request_user_id: UUID
+    first_name: str
+    last_name: str
+    birthday: date
+    person_under: Optional[int]
+    person_over: Optional[int]
+    contact_method: str
+    contact: str
+    travel_start: date
+    travel_end: date
+    travel_purpose: str
+    travel_pri: str
+    transport_pri: str
+    travel_restrict: Optional[str]
+    travel_addi: Optional[str]
+
+
+class ItineraryRequestSchema(ItineraryRequestBase):
+    id: UUID
+
+    class Config:
+        from_attributes = True
+
+
+class ItineraryBase(BaseModel):
+    request_id: UUID
+
+
+class ItinerarySchema(ItineraryBase):
+    id: UUID
+
+    class Config:
+        from_attributes = True
 
 
 # --------------------------------------------------------------------------
