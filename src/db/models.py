@@ -220,3 +220,6 @@ class PointDetail(ModelBase):
     related_event_id = Column(Integer, ForeignKey("Point_Event.id"), nullable=False)
     point_date = Column(TIMESTAMP, nullable=False)
     point = Column(Integer, nullable=False)
+
+    event = relationship("PointEvent", foreign_keys=[event_id])
+    related_event = relationship("PointEvent", foreign_keys=[related_event_id])

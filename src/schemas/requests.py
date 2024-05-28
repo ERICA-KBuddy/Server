@@ -8,7 +8,13 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, EmailStr
 
-from .responses import UserBase, AreaBase, AreaImageBase
+from .responses import (
+    UserBase,
+    AreaBase,
+    AreaImageBase,
+    PointDetailBase,
+    PointEventBase,
+)
 
 
 # --------------------------------------------------------------------------
@@ -97,3 +103,17 @@ class AreaImageUpdate(AreaImageBase):
 # --------------------------------------------------------------------------
 # Point
 # --------------------------------------------------------------------------
+class PointEventCreate(PointEventBase):
+    pass
+
+
+class PointEventUpdate(PointEventBase):
+    pass
+
+
+class PointDetailCreate(PointDetailBase):
+    pass
+
+
+class PointDetailUpdate(PointDetailBase):
+    pass
