@@ -16,7 +16,6 @@ from ._base import (
     create_object,
     update_object,
     delete_object,
-    get_object_with_uuid,
 )
 from src.db.models import User
 from src.schemas.requests import UserCreate, UserUpdate

@@ -175,6 +175,10 @@ class Area(ModelBase):
     contact_num = Column(String(100), nullable=True)
     open_time = Column(Text, nullable=True)
 
+    images = relationship(
+        "AreaImage", back_populates="area", cascade="all, delete-orphan"
+    )
+
 
 class AreaReview(ModelBase):
     __tablename__ = "Area_Review"
@@ -192,6 +196,8 @@ class AreaImage(ModelBase):
     area_id = Column(Integer, ForeignKey("Area.id"), nullable=False)
     area_img = Column(String(2048), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False)
+
+    area = relationship("Area", back_populates="images")
 
 
 class PointEvent(ModelBase):

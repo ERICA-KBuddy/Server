@@ -8,9 +8,11 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from setuptools_scm import get_version
 
+from src.core.settings import settings
 from src.db.database import engine, Base
 from src.helper.logging import init_logger as _init_logger
 from src.router import router
@@ -48,6 +50,17 @@ def create_app(app_settings: AppSettings) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
     )
+
+    if settings.BACKEND_CORS_ORIGINS:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[
+                str(origin).strip("/") for origin in settings.BACKEND_CORS_ORIGINS
+            ],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     app.include_router(router)
 

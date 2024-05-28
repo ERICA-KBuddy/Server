@@ -7,7 +7,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr, SecretStr, field_serializer
-from typing import Optional
+from typing import Optional, List
 
 
 # --------------------------------------------------------------------------
@@ -54,3 +54,65 @@ class UserSchema(UserBase):
 
     class Config:
         from_attributes = True
+
+
+# --------------------------------------------------------------------------
+# Area
+# --------------------------------------------------------------------------
+class AreaBase(BaseModel):
+    name: str
+    address: str
+    website: Optional[str] = None
+    contact_num: Optional[str] = None
+    open_time: Optional[str] = None
+
+
+class AreaImageBase(BaseModel):
+    area_id: int
+    area_img: str
+    created_at: datetime
+
+
+class AreaImageSchema(AreaImageBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class AreaSchema(AreaBase):
+    id: int
+    images: List[AreaImageSchema] = []
+
+    class Config:
+        from_attributes = True
+
+
+# --------------------------------------------------------------------------
+# Hashtag
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# Review
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# Listing
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# Order
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# Itinerary
+# --------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------------
+# Point
+# --------------------------------------------------------------------------
