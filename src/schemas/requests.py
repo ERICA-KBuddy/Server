@@ -16,6 +16,7 @@ from .responses import (
     PointDetailBase,
     PointEventBase,
     ListingBase,
+    OrderBase,
 )
 
 
@@ -106,6 +107,13 @@ class ListingUpdate(BaseModel):
 # --------------------------------------------------------------------------
 # Order
 # --------------------------------------------------------------------------
+class OrderCreate(OrderBase):
+    pass
+
+
+class OrderUpdate(BaseModel):
+    amount: Optional[int]
+    is_refunded: Optional[bool]
 
 
 # --------------------------------------------------------------------------
