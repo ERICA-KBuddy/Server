@@ -52,7 +52,9 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-async def decode_user_data_from_token(token: str = Depends(oauth2_scheme)):
+async def decode_user_data_from_token(
+    token: str = Depends(oauth2_scheme),
+) -> [TokenData, str]:
     credentials_exception = InternalException(
         "토큰에서 유저 정보를 찾을 수 없습니다.",
         error_code=ErrorCode.UNAUTHORIZED,

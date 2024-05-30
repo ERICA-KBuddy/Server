@@ -6,11 +6,13 @@
 from logging import getLogger
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import point as crud
+from src.crud import user as user_crud
 from src.db import database
+from src.router._check import check_user, auth
 from src.schemas.requests import (
     PointEventCreate,
     PointEventUpdate,
@@ -29,26 +31,46 @@ point_router = APIRouter(prefix="/point")
     "/events",
     response_model=List[PointEventSchema],
     summary="포인트 이벤트 전체를 불러오기",
-    description="모든 포인트 이벤트를 조회합니다.",
+    description="본인에게 발급된 모든 포인트 이벤트를 조회합니다.",
+    dependencies=[Depends(auth)],
 )
 async def get_all_point_events(
-    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)
+    request: Request,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(database.get_db),
 ):
+    current_user = await check_user(request=request)
+    current_user_data = await user_crud.get_user_by_email(
+        db=db, user_email=current_user
+    )
+    result_data = await crud.get_all_point_events(
+        db, str(current_user_data.id), skip=skip, limit=limit
+    )
     log.info(f"Reading point events with skip: {skip} and limit: {limit}")
-    return await crud.get_all_point_events(db, skip=skip, limit=limit)
+    return result_data
 
 
 @point_router.get(
     "/events/{event_id}",
     response_model=PointEventSchema,
     summary="단일 포인트 이벤트 조회",
-    description="단일 포인트 이벤트를 조회합니다.",
+    description="본인에게 발급된 단일 포인트 이벤트를 조회합니다.",
+    dependencies=[Depends(auth)],
 )
-async def read_point_event(event_id: int, db: AsyncSession = Depends(database.get_db)):
+async def read_point_event(request: Request, event_id: int, db: AsyncSession = Depends(database.get_db)):
+    current_user = await check_user(request=request)
+    current_user_data = await user_crud.get_user_by_email(
+        db=db, user_email=current_user
+    )
     db_event = await crud.get_point_event(db, event_id)
     if db_event is None:
         raise InternalException(
             "해당 포인트 이벤트를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
+        )
+    if db_event.user_id != current_user_data.id:
+        raise InternalException(
+            "본인의 포인트 이벤트만 조회 가능합니다.", error_code=ErrorCode.FORBIDDEN
         )
     return db_event
 
@@ -188,9 +210,18 @@ async def delete_point_detail(
     "/user/{user_id}/balance",
     summary="사용자의 포인트 잔액 조회",
     description="사용자의 포인트 잔액을 조회합니다.",
+    dependencies=[Depends(auth)],
 )
 async def get_user_point_balance(
-    user_id: str, db: AsyncSession = Depends(database.get_db)
+    request: Request, user_id: str, db: AsyncSession = Depends(database.get_db)
 ):
+    current_user = await check_user(request=request)
+    current_user_data = await user_crud.get_user_by_email(
+        db=db, user_email=current_user
+    )
+    if str(current_user_data.id) != user_id:
+        raise InternalException(
+            "포인트 내역은 본인만 조회할 수 있습니다.", error_code=ErrorCode.FORBIDDEN
+        )
     balance = await crud.get_user_points(db, user_id)
     return {"user_id": user_id, "balance": balance}

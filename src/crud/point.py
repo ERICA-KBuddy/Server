@@ -28,10 +28,12 @@ from src.schemas.responses import PointDetailSchema, PointEventSchema
 
 
 async def get_all_point_events(
-    db: AsyncSession, skip: int = 0, limit: int = 100
+    db: AsyncSession, target_user: str, skip: int = 0, limit: int = 100
 ) -> List[PointEventSchema]:
+    condition = f"user_id='{target_user}'"
     return await get_objects(
         db=db,
+        condition=condition,
         model=PointEvent,
         response_model=PointEventSchema,
         skip=skip,
