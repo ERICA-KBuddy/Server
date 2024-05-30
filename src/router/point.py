@@ -58,7 +58,9 @@ async def get_all_point_events(
     description="본인에게 발급된 단일 포인트 이벤트를 조회합니다.",
     dependencies=[Depends(auth)],
 )
-async def read_point_event(request: Request, event_id: int, db: AsyncSession = Depends(database.get_db)):
+async def read_point_event(
+    request: Request, event_id: int, db: AsyncSession = Depends(database.get_db)
+):
     current_user = await check_user(request=request)
     current_user_data = await user_crud.get_user_by_email(
         db=db, user_email=current_user

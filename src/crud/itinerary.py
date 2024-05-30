@@ -76,10 +76,12 @@ async def delete_itinerary_request(db: AsyncSession, request_id: str) -> Optiona
 
 
 async def get_all_itineraries(
-    db: AsyncSession, skip: int = 0, limit: int = 100
+    db: AsyncSession, target_user: str, skip: int = 0, limit: int = 100
 ) -> List[ItinerarySchema]:
+    condition = f"user_id='{target_user}'"
     return await get_objects(
         db=db,
+        condition=condition,
         model=Itinerary,
         response_model=ItinerarySchema,
         skip=skip,
