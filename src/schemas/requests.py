@@ -3,12 +3,10 @@
 #
 # @author bnbong bbbong9@gmail.com
 # --------------------------------------------------------------------------
-from enum import Enum
 from datetime import datetime, date
-from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional
+from typing import Optional, List
 
 from .responses import (
     UserBase,
@@ -20,6 +18,8 @@ from .responses import (
     OrderBase,
     ItineraryBase,
     ItineraryRequestBase,
+    TravelPriEnum,
+    TransportPriEnum,
 )
 
 
@@ -137,8 +137,8 @@ class ItineraryRequestUpdate(BaseModel):
     travel_start: Optional[date]
     travel_end: Optional[date]
     travel_purpose: Optional[str]
-    travel_pri: Optional[str]
-    transport_pri: Optional[str]
+    travel_pri: Optional[List[TravelPriEnum]]
+    transport_pri: Optional[List[TransportPriEnum]]
     travel_restrict: Optional[str]
     travel_addi: Optional[str]
 

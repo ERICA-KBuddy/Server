@@ -7,13 +7,13 @@ from __future__ import annotations
 
 from typing import List, Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._base import (
     get_objects,
     get_object,
     create_object,
-    update_object,
     delete_object,
 )
 from src.db.models import Itinerary, ItineraryRequest
@@ -26,26 +26,28 @@ from src.schemas.responses import ItinerarySchema, ItineraryRequestSchema
 
 
 async def get_all_itinerary_requests(
-    db: AsyncSession, skip: int = 0, limit: int = 100
+    db: AsyncSession, user_id: str, skip: int = 0, limit: int = 100
 ) -> List[ItineraryRequestSchema]:
-    return await get_objects(
-        db=db,
-        model=ItineraryRequest,
-        response_model=ItineraryRequestSchema,
-        skip=skip,
-        limit=limit,
+    query = (
+        select(ItineraryRequest)
+        .where(ItineraryRequest.is_deleted == False)
+        .where(ItineraryRequest.request_user_id == user_id)
+        .offset(skip)
+        .limit(limit)
     )
+    result = await db.execute(query)
+    return [
+        ItineraryRequestSchema.model_validate(item) for item in result.scalars().all()
+    ]
 
 
 async def get_itinerary_request(
     db: AsyncSession, request_id: str
 ) -> Optional[ItineraryRequestSchema]:
-    return await get_object(
-        db=db,
-        model=ItineraryRequest,
-        model_id=request_id,
-        response_model=ItineraryRequestSchema,
-    )
+    result = await db.get(ItineraryRequest, request_id)
+    if result and not result.is_deleted:
+        return ItineraryRequestSchema.model_validate(result)
+    return None
 
 
 async def create_itinerary_request(
@@ -62,17 +64,23 @@ async def create_itinerary_request(
 async def update_itinerary_request(
     db: AsyncSession, request_id: str, request: ItineraryRequestUpdate
 ) -> Optional[ItineraryRequestSchema]:
-    return await update_object(
-        db=db,
-        model=ItineraryRequest,
-        model_id=request_id,
-        obj=request,
-        response_model=ItineraryRequestSchema,
-    )
+    db_itinerary_request = await db.get(ItineraryRequest, request_id)
+    if db_itinerary_request is None or db_itinerary_request.is_deleted:
+        return None
+    for key, value in request.model_dump(exclude_unset=True).items():
+        setattr(db_itinerary_request, key, value)
+    db.add(db_itinerary_request)
+    await db.commit()
+    await db.refresh(db_itinerary_request)
+    return ItineraryRequestSchema.model_validate(db_itinerary_request)
 
 
-async def delete_itinerary_request(db: AsyncSession, request_id: str) -> Optional[int]:
-    return await delete_object(db=db, model=ItineraryRequest, model_id=request_id)
+async def delete_itinerary_request(db: AsyncSession, request_id: str) -> Optional[str]:
+    db_itinerary_request = await db.get(ItineraryRequest, request_id)
+    db_itinerary_request.is_deleted = True
+    db.add(db_itinerary_request)
+    await db.commit()
+    return request_id
 
 
 async def get_all_itineraries(

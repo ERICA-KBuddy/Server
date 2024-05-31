@@ -1,4 +1,4 @@
-# TODO: 본인이 작성하거나 구매한 여행기만 확인할 수 있도록 수정
+# TODO: 본인이 작성하거나 구매한 여행기만 확인할 수 있도록 수정, itinerary_router CREATE 메서드 로직 수정
 # --------------------------------------------------------------------------
 # Itinerary model의 API router을 정의한 모듈입니다.
 #
@@ -7,9 +7,10 @@
 from logging import getLogger
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.router._check import check_user, auth, get_current_user_info
 from src.crud import itinerary as crud
 from src.db import database
 from src.helper.exceptions import InternalException, ErrorCode
@@ -26,16 +27,23 @@ itinerary_router = APIRouter(prefix="/itinerary")
 
 
 @itinerary_router.get(
-    "/request",
+    "/request/",
     response_model=List[ItineraryRequestSchema],
     summary="여행기 요청 전체를 불러오기",
-    description="모든 여행기 요청에 대한 정보를 조회합니다.",
+    description="본인이 작성한 모든 여행기 요청에 대한 정보를 조회합니다.",
+    dependencies=[Depends(auth)],
 )
 async def get_all_itinerary_requests(
-    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)
+    request: Request,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(database.get_db),
 ):
+    current_user = await get_current_user_info(request, db)
     log.info(f"Reading itinerary requests with skip: {skip} and limit: {limit}")
-    return await crud.get_all_itinerary_requests(db, skip=skip, limit=limit)
+    return await crud.get_all_itinerary_requests(
+        db, str(current_user.id), skip=skip, limit=limit
+    )
 
 
 @itinerary_router.get(
@@ -43,28 +51,39 @@ async def get_all_itinerary_requests(
     response_model=ItineraryRequestSchema,
     summary="단일 여행기 요청 조회",
     description="단일 여행기 요청에 대한 정보를 조회합니다.",
+    dependencies=[Depends(auth)],
 )
 async def read_itinerary_request(
-    request_id: str, db: AsyncSession = Depends(database.get_db)
+    request: Request, request_id: str, db: AsyncSession = Depends(database.get_db)
 ):
+    current_user = await get_current_user_info(request, db)
     db_itinerary_request = await crud.get_itinerary_request(db, request_id)
     if db_itinerary_request is None:
         raise InternalException(
             "해당 여행기 요청을 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
+    if db_itinerary_request.request_user_id != current_user.id:
+        raise InternalException(
+            "본인이 작성한 여행기 요청서만 볼 수 있습니다.",
+            error_code=ErrorCode.FORBIDDEN,
+        )
     return db_itinerary_request
 
 
 @itinerary_router.post(
-    "/request",
+    "/request/",
     response_model=ItineraryRequestSchema,
     summary="여행기 요청 추가",
     description="새로운 여행기 요청을 추가합니다.",
+    dependencies=[Depends(auth)],
 )
 async def create_itinerary_request(
+    request: Request,
     itinerary_request: ItineraryRequestCreate,
     db: AsyncSession = Depends(database.get_db),
 ):
+    current_user = await get_current_user_info(request, db)
+    itinerary_request.request_user_id = current_user.id
     return await crud.create_itinerary_request(db, itinerary_request)
 
 
@@ -73,36 +92,52 @@ async def create_itinerary_request(
     response_model=ItineraryRequestSchema,
     summary="여행기 요청 정보 수정",
     description="여행기 요청 정보를 수정합니다.",
+    dependencies=[Depends(auth)],
 )
 async def update_itinerary_request(
+    request: Request,
     request_id: str,
     itinerary_request: ItineraryRequestUpdate,
     db: AsyncSession = Depends(database.get_db),
 ):
+    current_user = await get_current_user_info(request, db)
     db_itinerary_request = await crud.get_itinerary_request(db, request_id)
     if db_itinerary_request is None:
         raise InternalException(
             "해당 여행기 요청을 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
+        )
+    if db_itinerary_request.request_user_id != current_user.id:
+        raise InternalException(
+            "본인이 작성한 여행기 요청서만 수정할 수 있습니다.",
+            error_code=ErrorCode.FORBIDDEN,
         )
     return await crud.update_itinerary_request(db, request_id, itinerary_request)
 
 
-@itinerary_router.delete(
-    "/request/{request_id}",
+@itinerary_router.post(
+    "/request/{request_id}/delete",
     status_code=204,
-    summary="여행기 요청 삭제",
+    summary="단일 여행기 요청 삭제",
     description="여행기 요청을 삭제합니다.",
+    dependencies=[Depends(auth)],
 )
 async def delete_itinerary_request(
+    request: Request,
     request_id: str,
     db: AsyncSession = Depends(database.get_db),
 ):
+    current_user = await get_current_user_info(request, db)
     db_itinerary_request = await crud.get_itinerary_request(db, request_id)
     if db_itinerary_request is None:
         raise InternalException(
             "해당 여행기 요청을 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
-    await crud.delete_itinerary_request(db, request_id)
+    if db_itinerary_request.request_user_id != current_user.id:
+        raise InternalException(
+            "본인이 작성한 여행기 요청서만 삭제할 수 있습니다.",
+            error_code=ErrorCode.FORBIDDEN,
+        )
+    deleted_id = await crud.delete_itinerary_request(db, request_id)
     return {"detail": "여행기 요청이 성공적으로 삭제되었습니다."}
 
 

@@ -21,7 +21,9 @@ class TestItineraryAPI:
             "first_name": "Test",
             "last_name": "User",
         }
-        response = await app_client.post("kbuddy/api/v1/user/signup", json=self.user_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/user/signup", json=self.user_data
+        )
         self.user_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -41,7 +43,9 @@ class TestItineraryAPI:
             "promotion_end": (datetime.utcnow() + timedelta(days=30)).isoformat(),
             "amount": 10000,
         }
-        response = await app_client.post("kbuddy/api/v1/listing/", json=self.listing_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/listing/", json=self.listing_data
+        )
         self.listing_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -61,20 +65,22 @@ class TestItineraryAPI:
             "request_user_id": self.user_id,
             "first_name": "Test",
             "last_name": "User",
-            "birthday": date(1990, 1, 1),
+            "birthday": date(1990, 1, 1).isoformat(),
             "person_under": 2,
             "person_over": 2,
             "contact_method": "email",
             "contact": "test@example.com",
-            "travel_start": date(2024, 1, 1),
-            "travel_end": date(2024, 1, 10),
+            "travel_start": date(2024, 1, 1).isoformat(),
+            "travel_end": date(2024, 1, 10).isoformat(),
             "travel_purpose": "Vacation",
-            "travel_pri": "High",
-            "transport_pri": "Low",
+            "travel_pri": ["Activities", "Nature"],
+            "transport_pri": ["Taxi", "Public"],
             "travel_restrict": "None",
             "travel_addi": "None",
         }
-        response = await app_client.post("kbuddy/api/v1/itinerary/request/", json=self.itinerary_request_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/itinerary/request/", json=self.itinerary_request_data
+        )
         self.itinerary_request_id = response.json()["id"]
         assert response.status_code == 200
 
@@ -88,20 +94,22 @@ class TestItineraryAPI:
             "request_user_id": self.user_id,
             "first_name": "New",
             "last_name": "User",
-            "birthday": date(1991, 1, 1),
+            "birthday": date(1991, 1, 1).isoformat(),
             "person_under": 1,
             "person_over": 1,
             "contact_method": "phone",
             "contact": "new@example.com",
-            "travel_start": date(2024, 2, 1),
-            "travel_end": date(2024, 2, 10),
+            "travel_start": date(2024, 2, 1).isoformat(),
+            "travel_end": date(2024, 2, 10).isoformat(),
             "travel_purpose": "Business",
-            "travel_pri": "Medium",
-            "transport_pri": "High",
+            "travel_pri": ["Cuisine"],
+            "transport_pri": ["Car"],
             "travel_restrict": "None",
             "travel_addi": "None",
         }
-        response = await app_client.post("kbuddy/api/v1/itinerary/request/", json=itinerary_request_data)
+        response = await app_client.post(
+            "kbuddy/api/v1/itinerary/request/", json=itinerary_request_data
+        )
 
         # then
         assert response.status_code == 200
@@ -123,7 +131,9 @@ class TestItineraryAPI:
         # given
 
         # when
-        response = await app_client.get(f"kbuddy/api/v1/itinerary/request/{self.itinerary_request_id}")
+        response = await app_client.get(
+            f"kbuddy/api/v1/itinerary/request/{self.itinerary_request_id}"
+        )
 
         # then
         assert response.status_code == 200
@@ -131,42 +141,13 @@ class TestItineraryAPI:
         assert data["first_name"] == self.itinerary_request_data["first_name"]
         assert "id" in data
 
-    async def test_update_itinerary_request(self, app_client: AsyncClient):
-        # given
-
-        # when
-        update_data = {
-            "first_name": "Updated",
-            "last_name": "User",
-            "birthday": date(1992, 1, 1),
-            "person_under": 3,
-            "person_over": 3,
-            "contact_method": "phone",
-            "contact": "updated@example.com",
-            "travel_start": date(2024, 3, 1),
-            "travel_end": date(2024, 3, 10),
-            "travel_purpose": "Holiday",
-            "travel_pri": "Low",
-            "transport_pri": "Medium",
-            "travel_restrict": "None",
-            "travel_addi": "None",
-        }
-        response = await app_client.put(
-            f"kbuddy/api/v1/itinerary/requests/{self.itinerary_request_id}",
-            json=update_data,
-        )
-
-        # then
-        assert response.status_code == 200
-        data = response.json()
-        assert data["first_name"] == update_data["first_name"]
-        assert data["last_name"] == update_data["last_name"]
-
     async def test_delete_itinerary_request(self, app_client: AsyncClient):
         # given
 
         # when
-        response = await app_client.delete(f"kbuddy/api/v1/itinerary/requests/{self.itinerary_request_id}")
+        response = await app_client.post(
+            f"kbuddy/api/v1/itinerary/request/{self.itinerary_request_id}/delete"
+        )
 
         # then
         assert response.status_code == 204

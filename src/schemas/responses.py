@@ -5,6 +5,7 @@
 # --------------------------------------------------------------------------
 from datetime import datetime, date
 from uuid import UUID
+from enum import Enum
 
 from pydantic import BaseModel, Field, EmailStr, SecretStr, field_serializer
 from typing import Optional, List
@@ -139,6 +140,25 @@ class OrderSchema(OrderBase):
 # --------------------------------------------------------------------------
 # Itinerary
 # --------------------------------------------------------------------------
+class TransportPriEnum(str, Enum):
+    TAXI = "Taxi"
+    CAR = "Car"
+    PUBLIC = "Public"
+
+
+class TravelPriEnum(str, Enum):
+    ACTIVITIES = "Activities"
+    BUDGET = "Budget"
+    CULTURE = "Culture (Local traditions)"
+    CUISINE = "Cuisine"
+    HISTORY = "History"
+    LOCAL_EVENTS = "Local events"
+    NATURE = "Nature"
+    PHOTOGRAPHY = "Photography"
+    RELAXATION = "Relaxation"
+    SHOPPING = "Shopping"
+
+
 class ItineraryRequestBase(BaseModel):
     listing_id: UUID
     order_id: UUID
@@ -153,8 +173,8 @@ class ItineraryRequestBase(BaseModel):
     travel_start: date
     travel_end: date
     travel_purpose: str
-    travel_pri: str
-    transport_pri: str
+    travel_pri: List[TravelPriEnum]
+    transport_pri: List[TransportPriEnum]
     travel_restrict: Optional[str]
     travel_addi: Optional[str]
 
