@@ -1,4 +1,4 @@
-# TODO: 본인이 작성하거나 구매한 여행기만 확인할 수 있도록 수정, itinerary_router CREATE 메서드 로직 수정
+# TODO: itinerary_router CREATE 메서드 로직 수정
 # --------------------------------------------------------------------------
 # Itinerary model의 API router을 정의한 모듈입니다.
 #
@@ -142,32 +142,20 @@ async def delete_itinerary_request(
 
 
 @itinerary_router.get(
-    "/",
-    response_model=List[ItinerarySchema],
-    summary="여행기 전체를 불러오기",
-    description="모든 여행기에 대한 정보를 조회합니다.",
-)
-async def get_all_itineraries(
-    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)
-):
-    log.info(f"Reading itineraries with skip: {skip} and limit: {limit}")
-    return await crud.get_all_itineraries(db, skip=skip, limit=limit)
-
-
-@itinerary_router.get(
     "/{itinerary_id}",
     response_model=ItinerarySchema,
     summary="단일 여행기 조회",
     description="단일 여행기에 대한 정보를 조회합니다.",
 )
 async def read_itinerary(
-    itinerary_id: str, db: AsyncSession = Depends(database.get_db)
+    request: Request, itinerary_id: str, db: AsyncSession = Depends(database.get_db)
 ):
     db_itinerary = await crud.get_itinerary(db, itinerary_id)
     if db_itinerary is None:
         raise InternalException(
             "해당 여행기를 찾을 수 없습니다.", error_code=ErrorCode.NOT_FOUND
         )
+
     return db_itinerary
 
 

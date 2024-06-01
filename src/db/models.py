@@ -147,9 +147,9 @@ class Itinerary(ModelBase):
     )
 
     request = relationship("ItineraryRequest", back_populates="itinerary")
-    place_containers = relationship("PlaceContainer", back_populates="itinerary")
+    place_containers = relationship("PlaceContainer", back_populates="itinerary", cascade="all, delete-orphan")
     transport_containers = relationship(
-        "TransportContainer", back_populates="itinerary"
+        "TransportContainer", back_populates="itinerary", cascade="all, delete-orphan"
     )
 
 

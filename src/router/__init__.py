@@ -3,7 +3,9 @@
 #
 # @author bnbong bbbong9@gmail.com
 # --------------------------------------------------------------------------
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .user import user_router
 from .listing import listing_router
@@ -12,6 +14,9 @@ from .review import review_router
 from .order import order_router
 from .point import point_router
 from .itinerary import itinerary_router
+
+from src.db import database
+from src.db.data import csv_converter
 
 router = APIRouter(prefix="/kbuddy/api/v1")
 
@@ -38,3 +43,9 @@ router.include_router(itinerary_router, tags=["itinerary"])
 )
 async def ping():
     return {"ping": "pong"}
+
+
+@router.post("/upload-csv/")
+async def upload_csv(db: AsyncSession = Depends(database.get_db)):
+    await csv_converter.csv_to_db(db)
+    return {"message": "CSV data has been uploaded successfully"}
