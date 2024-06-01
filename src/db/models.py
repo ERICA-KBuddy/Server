@@ -6,6 +6,7 @@
 import uuid
 
 from typing import Optional
+from enum import Enum
 
 from sqlalchemy import (
     Integer,
@@ -16,11 +17,13 @@ from sqlalchemy import (
     Text,
     Date,
     TIMESTAMP,
+    Enum as SQLAlchemyEnum,
     UUID as SQLUUID,
 )
 from sqlalchemy import select
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from src.db._base import ModelBase
 from src.utils.authentication import verify_password
@@ -71,6 +74,25 @@ class Listing(ModelBase):
     amount = Column(Integer, nullable=False)
 
 
+class TransportPriEnum(str, Enum):
+    TAXI = "Taxi"
+    CAR = "Car"
+    PUBLIC = "Public"
+
+
+class TravelPriEnum(str, Enum):
+    ACTIVITIES = "Activities"
+    BUDGET = "Budget"
+    CULTURE = "Culture (Local traditions)"
+    CUISINE = "Cuisine"
+    HISTORY = "History"
+    LOCAL_EVENTS = "Local events"
+    NATURE = "Nature"
+    PHOTOGRAPHY = "Photography"
+    RELAXATION = "Relaxation"
+    SHOPPING = "Shopping"
+
+
 class ItineraryRequest(ModelBase):
     __tablename__ = "Itinerary_Request"
     id = Column(SQLUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -87,10 +109,21 @@ class ItineraryRequest(ModelBase):
     travel_start = Column(Date, nullable=False)
     travel_end = Column(Date, nullable=False)
     travel_purpose = Column(Text, nullable=False)
-    travel_pri = Column(Text, nullable=False)
-    transport_pri = Column(Text, nullable=False)
+    travel_pri = Column(
+        ARRAY(
+            SQLAlchemyEnum(TravelPriEnum, create_constraint=False, native_enum=False)
+        ),
+        nullable=False,
+    )
+    transport_pri = Column(
+        ARRAY(
+            SQLAlchemyEnum(TransportPriEnum, create_constraint=False, native_enum=False)
+        ),
+        nullable=False,
+    )
     travel_restrict = Column(Text, nullable=True)
     travel_addi = Column(Text, nullable=True)
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
     itinerary = relationship("Itinerary", back_populates="request")
     place_containers = relationship("PlaceContainer", back_populates="request")
@@ -114,9 +147,9 @@ class Itinerary(ModelBase):
     )
 
     request = relationship("ItineraryRequest", back_populates="itinerary")
-    place_containers = relationship("PlaceContainer", back_populates="itinerary")
+    place_containers = relationship("PlaceContainer", back_populates="itinerary", cascade="all, delete-orphan")
     transport_containers = relationship(
-        "TransportContainer", back_populates="itinerary"
+        "TransportContainer", back_populates="itinerary", cascade="all, delete-orphan"
     )
 
 
@@ -137,6 +170,13 @@ class PlaceContainer(ModelBase):
     request = relationship("ItineraryRequest", back_populates="place_containers")
 
 
+class TransportEnum(str, Enum):
+    WALK = "Walk"
+    DRIVING = "Driving"
+    SUBWAY = "Subway"
+    BUS = "Bus"
+
+
 class TransportContainer(ModelBase):
     __tablename__ = "Transport_Container"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -146,7 +186,7 @@ class TransportContainer(ModelBase):
     request_id = Column(
         SQLUUID(as_uuid=True), ForeignKey("Itinerary_Request.id"), nullable=False
     )
-    type = Column(String, nullable=False)
+    type = Column(SQLAlchemyEnum(TransportEnum), nullable=False)
     description = Column(Text, nullable=False)
     duration = Column(Integer, nullable=False)
     container_date = Column(Date, nullable=False)

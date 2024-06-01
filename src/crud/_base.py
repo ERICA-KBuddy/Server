@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any, Type, List, Optional
 
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -36,7 +36,7 @@ async def get_objects(
 ) -> List[Any]:
     query = select(model).offset(skip).limit(limit)
     if condition is not None:
-        query = query.where(condition)
+        query = query.where(text(condition))
     result = await db.execute(query)
     result_list = result.scalars().all()
     return [response_model.model_validate(item.__dict__) for item in result_list]

@@ -26,6 +26,12 @@ class TestPointAPI:
         self.user_id = response.json()["id"]
         assert response.status_code == 200
 
+        self.login_data = {
+            "identifier": "testuser@example.com",
+            "password": "password123",
+        }
+        await app_client.post("kbuddy/api/v1/user/login", json=self.login_data)
+
         self.event_data = {
             "user_id": self.user_id,
             "event_type": "earn",

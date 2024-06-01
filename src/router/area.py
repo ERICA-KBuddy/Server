@@ -3,10 +3,12 @@
 #
 # @author bnbong bbbong9@gmail.com
 # --------------------------------------------------------------------------
+import httpx
+
 from logging import getLogger
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import area as crud
@@ -17,12 +19,95 @@ from src.schemas.requests import (
     AreaImageCreate,
     AreaImageUpdate,
 )
-from src.schemas.responses import AreaSchema, AreaImageSchema
+from src.db.data import csv_converter
+from src.core.settings import settings
+from src.schemas.responses import AreaSchema, AreaImageSchema, AreaSchemaAPI
 from src.helper.exceptions import InternalException, ErrorCode
 
 
 log = getLogger(__name__)
 area_router = APIRouter(prefix="/area")
+
+
+async def get_area_data():
+    file_path = "src/db/data/20240602001629_지역별 방문자 수.csv"
+    random_area = await csv_converter.get_random_area(file_path)
+
+    # 지역 코드 정보를 조회하는 API 요청
+    area_code_url = f"{settings.TOUR_API_ENDPOINT}/areaCode1"
+    area_code_params = {
+        "serviceKey": settings.TOUR_API_KEY_DECODING,
+        "numOfRows": 30,
+        "pageNo": 1,
+        "MobileOS": "ETC",
+        "MobileApp": "K-Buddy",
+        "_type": "JSON",
+        "areaCode": 1
+    }
+
+    async with httpx.AsyncClient() as client:
+        area_code_response = await client.get(area_code_url, params=area_code_params)
+        if area_code_response.status_code != 200:
+            raise HTTPException(status_code=area_code_response.status_code, detail="Failed to fetch area codes")
+
+        area_codes = area_code_response.json()
+        area_code = None
+        for item in area_codes['response']['body']['items']['item']:
+            if item['name'] == random_area:
+                area_code = item['code']
+                break
+
+        if not area_code:
+            raise HTTPException(status_code=404, detail="Area code not found for selected area")
+
+        # 관광 정보 조회하는 API 요청
+        tour_info_url = f"{settings.TOUR_API_ENDPOINT}/areaBasedList1"
+        tour_info_params = {
+            "serviceKey": settings.TOUR_API_KEY_DECODING,
+            "numOfRows": 5,
+            "pageNo": 1,
+            "MobileOS": "ETC",
+            "MobileApp": "K-Buddy",
+            "listYN": "Y",
+            "arrange": "A",
+            "areaCode": 1,
+            "sigunguCode": area_code,
+            "_type": "JSON",
+        }
+
+        tour_info_response = await client.get(tour_info_url, params=tour_info_params)
+        if tour_info_response.status_code != 200:
+            raise HTTPException(status_code=tour_info_response.status_code, detail="Failed to fetch tour info")
+
+        tour_info = tour_info_response.json()
+
+    return tour_info
+
+
+@area_router.get(
+    "/curate",
+    response_model=List[AreaSchemaAPI],
+    summary="지역 큐레이션",
+    description="사용자에게 최근 가장 트랜드한 장소 5개를 큐레이션합니다."
+)
+async def cureate_areas(
+
+):
+    tour_info = await get_area_data()
+
+    areas = []
+    for item in tour_info['response']['body']['items']['item']:
+        area = AreaSchemaAPI(
+            name=item.get('title', ''),
+            address=item.get('addr1', ''),
+            website=item.get('homepage', None),
+            contact_num=item.get('tel', None),
+            open_time=item.get('usetime', None),
+            image=item.get('firstimage', '')
+        )
+        areas.append(area)
+
+    return areas
 
 
 @area_router.get(

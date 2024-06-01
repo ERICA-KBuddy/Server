@@ -40,7 +40,7 @@ async def get_current_user_info(
 async def check_user(
     request: Request,
 ) -> str:
-    user_pk, _ = await get_auth_from_cookie(request)
+    _, user_pk = await get_auth_from_cookie(request)
     if not user_pk:
         raise InternalException("사용자 정보가 없습니다.", ErrorCode.BAD_REQUEST)
     return user_pk

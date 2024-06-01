@@ -75,6 +75,19 @@ class AppSettings(BaseSettings):
         description="Server's port",
     )
 
+    TOUR_API_KEY_ENCODING: str = Field(
+        default="tour_api_key_encoded",
+        description="한국관광공사_영문 관광정보서비스_GW API key (Encoding)"
+    )
+    TOUR_API_KEY_DECODING: str = Field(
+        default="tour_api_key_decoded",
+        description="한국관광공사_영문 관광정보서비스_GW API key (Decoding)"
+    )
+    TOUR_API_ENDPOINT: str = Field(
+        default="http://apis.data.go.kr/B551011/EngService1",
+        description="한국관광공사_영문 관광정보서비스_GW API endpoint"
+    )
+
     HASH_ALGORITHM: str = Field(default="HS256", description="Algorithm for Hashing")
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
