@@ -49,6 +49,8 @@ def create_app(app_settings: AppSettings) -> FastAPI:
         description="K-Buddy Backend API Server (for SW창업캡스톤디자인2)",
         version=__version__,
         lifespan=lifespan,
+        openapi_url="/kbuddy/api/v1/openapi.json",
+        redoc_url="/kbuddy/api/v1/redoc",
     )
 
     if settings.BACKEND_CORS_ORIGINS:
